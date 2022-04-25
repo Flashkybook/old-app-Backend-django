@@ -44,6 +44,8 @@ else:
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 
+# Application definition
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -51,7 +53,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     # Api
     'rest_framework',
     'corsheaders',
@@ -105,6 +106,7 @@ WSGI_APPLICATION = 'settings.wsgi.application'
 #     }
 # }
 
+
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
@@ -115,6 +117,7 @@ DATABASES = {
         "PORT": "5432",
     }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
