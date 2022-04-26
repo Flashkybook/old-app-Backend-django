@@ -92,22 +92,46 @@ class AddWordTerms(APIView):
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
+# https://github.com/alankan886/SuperMemo2
+from supermemo2 import SMTwo
+from django.utils import timezone
 
 class StudyWordSession(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, format=None):
         data = request.data
-        print(data)
         user = request.user
-        queryset = UserBook.objects.get(user=user.id, word=data)
-        # Envia el json correspondiente al queriset de userbook actual
+        queryset = UserBook.objects.get(id=data['id'])
         serializer = UserBookSerializer(queryset, many=True)
 
+
+        if queryset.last_review == None :
+            # review date would default to date.today() if not provided
+            review = SMTwo.first_review(data['easiness'])
+            # review prints SMTwo(easiness=2.36, interval=1, repetitions=1, review_date=datetime.date(2021, 3, 15))
+        else:
+            # second review
+            review = SMTwo(queryset.easiness, queryset.interval, queryset.repetitions).review(data['easiness'])
+            # review prints similar to example above.
+        
+
+        # print(data)
+        print(review)
+        print(queryset, queryset.easiness, queryset.interval, queryset.repetitions,  queryset.next_review_date )
+        queryset.easiness = review.easiness
+        queryset.interval = review.interval
+        queryset.repetitions = review.repetitions
+        queryset.next_review_date = review.review_date
+        
+        queryset.last_review = timezone.now()
+
+        queryset.save()
+        print(queryset, queryset.easiness, queryset.interval, queryset.repetitions, queryset.next_review_date )
+
         try:
-            print("sussess 200 Peticion acceptada", )
             return Response(
-                {"success": serializer.data},
+                {"success": "queryset"},
                 status=status.HTTP_202_ACCEPTED
             )
         except:
