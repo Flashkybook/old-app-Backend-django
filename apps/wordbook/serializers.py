@@ -12,4 +12,4 @@ class UserBookSerializer(serializers.ModelSerializer):
     terms = WordTermSerializer()
     class Meta:
         model = UserBook
-        fields = ('terms', 'nivel')
+        fields = ('terms', 'easiness')

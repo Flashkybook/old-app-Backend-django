@@ -16,7 +16,7 @@ class ViewUserBook(APIView):
         queryset = UserBook.objects.filter(user=request.user.id)
         # Envia el json correspondiente al queriset ed userbook actual
         serializer = UserBookSerializer(queryset, many=True)
-        
+
         if(request.method == 'GET'):
             try:
                 return Response(
@@ -29,6 +29,7 @@ class ViewUserBook(APIView):
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
         else:
+
             return Response(
                 {'error': "No allow POST method ", },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
@@ -37,8 +38,11 @@ class ViewUserBook(APIView):
 # View Dictionary GET
 
 # add Term http://127.0.0.1:8000/api/words/add_to_dict/
+
+
 class AddWordTerms(APIView):
     permission_classes = [permissions.AllowAny]
+
     def post(self, request, format=None):
         """POST, crea un nuevo objeto WordTerm y lo agrega al userbook del current user
         si este ya existe entonces lo encontramos y lo agregamos al current user book """
@@ -81,6 +85,31 @@ class AddWordTerms(APIView):
                         {'error': "error 505 already exist in your userbook"},
                         status=status.HTTP_406_NOT_ACCEPTABLE
                     )
+        except:
+            print("error 401 error de peticion try")
+            return Response(
+                {'error': "error 505 neither added or created"},
+                status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
+
+class StudyWordSession(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request, format=None):
+        data = request.data
+        print(data)
+        user = request.user
+        queryset = UserBook.objects.get(user=user.id, word=data)
+        # Envia el json correspondiente al queriset de userbook actual
+        serializer = UserBookSerializer(queryset, many=True)
+
+        try:
+            print("sussess 200 Peticion acceptada", )
+            return Response(
+                {"success": serializer.data},
+                status=status.HTTP_202_ACCEPTED
+            )
         except:
             print("error 401 error de peticion try")
             return Response(
