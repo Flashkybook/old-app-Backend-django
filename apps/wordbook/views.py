@@ -94,8 +94,7 @@ class AddWordTerms(APIView):
 
 # https://github.com/alankan886/SuperMemo2
 from supermemo2 import SMTwo
-from django.utils import timezone
-
+import datetime
 class StudyWordSession(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -105,33 +104,39 @@ class StudyWordSession(APIView):
         queryset = UserBook.objects.get(id=data['id'])
         serializer = UserBookSerializer(queryset, many=True)
 
+        today = datetime.date.today() # only day
 
+
+        # PRIMERA VES QUE SE ESTUDIA LA PALABRA
         if queryset.last_review == None :
             # review date would default to date.today() if not provided
             review = SMTwo.first_review(data['easiness'])
             # review prints SMTwo(easiness=2.36, interval=1, repetitions=1, review_date=datetime.date(2021, 3, 15))
+        
         else:
-            # second review
-            review = SMTwo(queryset.easiness, queryset.interval, queryset.repetitions).review(data['easiness'])
-            # review prints similar to example above.
+            # ESTUDIAS LA PALABRA VARIAS VECES UN MISMO DIA
+            if(queryset.last_review == today):
+                queryset.repetitions = queryset.repetitions + 1
+            # ESTUDIO FRECUENCIA NORMAL
+            else:
+                print("tambien")
+                # second review
+                review = SMTwo(queryset.easiness, queryset.interval, queryset.repetitions).review(data['easiness'])
+                # review prints similar to example above.
+                queryset.easiness = review.easiness
+                queryset.interval = review.interval
+                queryset.repetitions = review.repetitions
+                queryset.next_review_date = review.review_date
+            
         
-
-        # print(data)
-        print(review)
-        print(queryset, queryset.easiness, queryset.interval, queryset.repetitions,  queryset.next_review_date )
-        queryset.easiness = review.easiness
-        queryset.interval = review.interval
-        queryset.repetitions = review.repetitions
-        queryset.next_review_date = review.review_date
-        
-        queryset.last_review = timezone.now()
+        queryset.last_review = today
 
         queryset.save()
-        print(queryset, queryset.easiness, queryset.interval, queryset.repetitions, queryset.next_review_date )
+        print(queryset, "easiness:",queryset.easiness, "interval:",queryset.interval,"repetitions:", queryset.repetitions, "next_review_date:",queryset.next_review_date, "last_review:",queryset.last_review, "===", today )
 
         try:
             return Response(
-                {"success": "queryset"},
+                {"success": "study session update"},
                 status=status.HTTP_202_ACCEPTED
             )
         except:
