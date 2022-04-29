@@ -152,21 +152,35 @@ class StudyWordSession(APIView):
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
+from django.template.defaultfilters import slugify
+
+
 
 class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/text_to_speesh/
+    
+    
     permission_classes = [permissions.AllowAny]
+    # name = slugify(self.mytext)
+    # path = os.path.join((Path(__file__).resolve().parent), f'tem/{name}.ogg')
+    path = os.path.join((Path(__file__).resolve().parent), f'tem/gtts.ogg')
 
+    def post(self, request, format=None):
+        mytext = request.data
+        language = 'en'
+        
+        audio = gTTS(text=mytext, lang=language)
+        audio.save(self.path)
+
+        self.mytext = request.data
+        return Response(
+            {"success": "text to speesh"},
+            status=status.HTTP_202_ACCEPTED
+        )
 
     def get(self, request, format=None):
-        
-        
-        mytext = """Ángel déjame decirte que eres una cosa bien bárbara"""
-        language = 'es'
-        path = os.path.join((Path(__file__).resolve().parent), 'tem/gtts.ogg')
-        # speesh = gTTS(text=mytext, lang=language)
-        # speesh.save(path)
-        respose_audio = open(path, "rb")
+        respose_audio = open(self.path, "rb")
         response = FileResponse(respose_audio)
         # response['Content-Disposition'] = 'attachment; filename="somefilename.mp3"'
 
         return response
+
