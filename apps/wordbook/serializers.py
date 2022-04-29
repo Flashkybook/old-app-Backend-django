@@ -7,9 +7,12 @@ class WordTermSerializer(serializers.ModelSerializer):
         model = WordTerm
         fields = '__all__'
 
+
 class UserBookSerializer(serializers.ModelSerializer):
-    ## debe llamarse user_book.terms
+    # debe llamarse user_book.terms
     terms = WordTermSerializer()
+
     class Meta:
         model = UserBook
-        fields = ('easiness', 'id', 'interval', 'last_review', 'next_review_date','repetitions', 'terms', 'terms_id', 'user', 'user_id')
+        fields = ('terms', 'easiness', 'interval', 'repetitions',
+                  'last_review', 'next_review_date',  'user', 'id', )

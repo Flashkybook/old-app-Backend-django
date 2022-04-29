@@ -100,9 +100,10 @@ class StudyWordSession(APIView):
 
     def post(self, request, format=None):
         data = request.data
-        user = request.user
         queryset = UserBook.objects.get(id=data['id'])
-        serializer = UserBookSerializer(queryset, many=True)
+
+        # user = request.user
+        # serializer = UserBookSerializer(queryset, many=True)
 
         today = datetime.date.today() # only day
 
@@ -112,17 +113,19 @@ class StudyWordSession(APIView):
             # review date would default to date.today() if not provided
             review = SMTwo.first_review(data['easiness'])
             # review prints SMTwo(easiness=2.36, interval=1, repetitions=1, review_date=datetime.date(2021, 3, 15))
-        
+            queryset.easiness = review.easiness
+            queryset.interval = review.interval
+            queryset.repetitions = review.repetitions
+            queryset.next_review_date = review.review_date
+            
         else:
             # ESTUDIAS LA PALABRA VARIAS VECES UN MISMO DIA
             if(queryset.last_review == today):
                 queryset.repetitions = queryset.repetitions + 1
             # ESTUDIO FRECUENCIA NORMAL
             else:
-                print("tambien")
-                # second review
+                # other review
                 review = SMTwo(queryset.easiness, queryset.interval, queryset.repetitions).review(data['easiness'])
-                # review prints similar to example above.
                 queryset.easiness = review.easiness
                 queryset.interval = review.interval
                 queryset.repetitions = review.repetitions
@@ -132,7 +135,7 @@ class StudyWordSession(APIView):
         queryset.last_review = today
 
         queryset.save()
-        print(queryset, "easiness:",queryset.easiness, "interval:",queryset.interval,"repetitions:", queryset.repetitions, "next_review_date:",queryset.next_review_date, "last_review:",queryset.last_review, "===", today )
+        # print(queryset, "easiness:",queryset.easiness, "interval:",queryset.interval,"repetitions:", queryset.repetitions, "next_review_date:",queryset.next_review_date, "last_review:",queryset.last_review, "===", today )
 
         try:
             return Response(

@@ -26,9 +26,9 @@ class UserBook(models.Model):
     easiness = models.FloatField(default=0)
     last_review  = models.DateField( null=True, blank=True)
 
-    interval  = models.IntegerField( null=True, blank=True)
+    interval  = models.IntegerField(default=0)
 
-    repetitions  = models.IntegerField( null=True, blank=True, default=0)
+    repetitions  = models.IntegerField(default=0)
 
     next_review_date  = models.DateField( null=True, blank=True)
 
