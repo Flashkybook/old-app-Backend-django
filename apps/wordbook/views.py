@@ -1,3 +1,9 @@
+from gtts import gTTS
+import os
+from django.http import FileResponse, HttpResponse
+from pathlib import Path
+import datetime
+from supermemo2 import SMTwo
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
@@ -34,9 +40,7 @@ class ViewUserBook(APIView):
                 {'error': "No allow POST method ", },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
 # View Dictionary GET
-
 # add Term http://127.0.0.1:8000/api/words/add_to_dict/
 
 
@@ -93,8 +97,8 @@ class AddWordTerms(APIView):
             )
 
 # https://github.com/alankan886/SuperMemo2
-from supermemo2 import SMTwo
-import datetime
+
+
 class StudyWordSession(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -105,11 +109,10 @@ class StudyWordSession(APIView):
         # user = request.user
         # serializer = UserBookSerializer(queryset, many=True)
 
-        today = datetime.date.today() # only day
-
+        today = datetime.date.today()  # only day
 
         # PRIMERA VES QUE SE ESTUDIA LA PALABRA
-        if queryset.last_review == None :
+        if queryset.last_review == None:
             # review date would default to date.today() if not provided
             review = SMTwo.first_review(data['easiness'])
             # review prints SMTwo(easiness=2.36, interval=1, repetitions=1, review_date=datetime.date(2021, 3, 15))
@@ -117,7 +120,7 @@ class StudyWordSession(APIView):
             queryset.interval = review.interval
             queryset.repetitions = review.repetitions
             queryset.next_review_date = review.review_date
-            
+
         else:
             # ESTUDIAS LA PALABRA VARIAS VECES UN MISMO DIA
             if(queryset.last_review == today):
@@ -125,13 +128,13 @@ class StudyWordSession(APIView):
             # ESTUDIO FRECUENCIA NORMAL
             else:
                 # other review
-                review = SMTwo(queryset.easiness, queryset.interval, queryset.repetitions).review(data['easiness'])
+                review = SMTwo(queryset.easiness, queryset.interval,
+                               queryset.repetitions).review(data['easiness'])
                 queryset.easiness = review.easiness
                 queryset.interval = review.interval
                 queryset.repetitions = review.repetitions
                 queryset.next_review_date = review.review_date
-            
-        
+
         queryset.last_review = today
 
         queryset.save()
@@ -148,3 +151,22 @@ class StudyWordSession(APIView):
                 {'error': "error 505 neither added or created"},
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
+
+
+class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/text_to_speesh/
+    permission_classes = [permissions.AllowAny]
+
+
+    def get(self, request, format=None):
+        
+        
+        mytext = """Ángel déjame decirte que eres una cosa bien bárbara"""
+        language = 'es'
+        path = os.path.join((Path(__file__).resolve().parent), 'tem/gtts.ogg')
+        # speesh = gTTS(text=mytext, lang=language)
+        # speesh.save(path)
+        respose_audio = open(path, "rb")
+        response = FileResponse(respose_audio)
+        # response['Content-Disposition'] = 'attachment; filename="somefilename.mp3"'
+
+        return response

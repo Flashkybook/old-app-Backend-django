@@ -18,6 +18,11 @@ from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 
 urlpatterns = [
+    # for unauthorized access dynamic translation 
+    path('gtts/', include('gTTS.urls')),
+    # for user authorized dynamic translation
+    path('gtts_auth/', include('gTTS.urls_auth')),
+
     path('admin/', admin.site.urls),
     path('api/token/', TokenObtainPairView.as_view()),
     path('api/token/refresh/', TokenRefreshView.as_view()),

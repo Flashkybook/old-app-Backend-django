@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     # Api
     'rest_framework',
     'corsheaders',
+    'gTTS',
 
     # Apps
     'account',
