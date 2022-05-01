@@ -13,7 +13,7 @@ djangorestframework-simplejwt
 psycopg2
 django-cors-headers
 
-`$ pip install django djangorestframework djangorestframework-simplejwt psycopg2 django-cors-headers django-environ`
+`$ pip install django djangorestframework djangorestframework-simplejwt psycopg2 django-cors-headers django-environ gTTS supermemo2`
 
 
 `settings/settings.py`
@@ -122,3 +122,9 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 2. Facilidad: El factor de facilidad, un multiplicador que afecta el tamaño del intervalo, determinado por la calidad del recuerdo.
 3. Intervalo: La brecha/espacio entre su próxima revisión.
 4. Repeticiones: el recuento de respuestas correctas (calidad >= 3) que tiene seguidas.
+
+
+
+# gTTS
+
+`$ pip install gTTS`
