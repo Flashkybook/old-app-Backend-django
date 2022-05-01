@@ -157,7 +157,7 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/text_to_spees
     permission_classes = [permissions.AllowAny]
     # name = slugify(self.mytext)
     # path = os.path.join((Path(__file__).resolve().parent), f'tem/{name}.ogg')
-    path = os.path.join((Path(__file__).resolve().parent), f'tem/gtts.ogg')
+    path = os.path.join((Path(__file__).resolve().parent.parent.parent), f'static/tem/gtts.ogg')
 
     def post(self, request, format=None):
         mytext = request.data
