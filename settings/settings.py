@@ -176,12 +176,12 @@ SIMPLE_JWT = {
     # 'ROTATE_REFRESH_TOKENS': True,
     # 'BLACKLIST_AFTER_ROTATION': True, ## add this for use refresh token and expire access token
     'AUTH_HEADER_TYPES': ('Bearer',),
-
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
 }
 
-# url form request
+# url frontend request
 
+# CORS_ORIGIN_ALLOW_ALL=True
 if DEBUG:
     CORS_ALLOWED_ORIGINS = [
         'http://localhost:3000',
