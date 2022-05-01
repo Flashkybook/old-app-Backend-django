@@ -23,14 +23,12 @@ class UserBook(models.Model):
     # sinonyms = models.ManyToManyField('self')
 
     # last calidad
-    easiness = models.FloatField(default=0)
+    easiness = models.DecimalField(default=0, decimal_places=2, max_digits=4)
+
     last_review  = models.DateField( null=True, blank=True)
-
     interval  = models.IntegerField(default=0)
-
     repetitions  = models.IntegerField(default=0)
-
     next_review_date  = models.DateField( null=True, blank=True)
 
     def __str__(self):
-        return f'{self.user.username} {self.terms.word} '
+        return f'{self.user.username} {self.terms.word}'
