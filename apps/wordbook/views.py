@@ -32,13 +32,13 @@ class ViewUserBook(APIView):
                 )
             except:
                 return Response(
-                    {'error': "error 505 algo no funciona correctamente", },
+                    {'error': 'error 505 algo no funciona correctamente', },
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
         else:
 
             return Response(
-                {'error': "No allow POST method ", },
+                {'error': 'No allow POST method ', },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 # View Dictionary GET
@@ -49,8 +49,8 @@ class AddWordTerms(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, format=None):
-        """POST, crea un nuevo objeto WordTerm y lo agrega al userbook del current user
-        si este ya existe entonces lo encontramos y lo agregamos al current user book """
+        '''POST, crea un nuevo objeto WordTerm y lo agrega al userbook del current user
+        si este ya existe entonces lo encontramos y lo agregamos al current user book '''
         # queryset = Dictionary.objects.filter(user=request.user.id)
         try:
             data = request.data
@@ -67,7 +67,7 @@ class AddWordTerms(APIView):
                     user=request.user, terms=word)
                 user_book.save()
                 return Response(
-                    {'success': "word add to dictionary and add to user book"},
+                    {'success': 'word add to dictionary and add to user book'},
                     status=status.HTTP_201_CREATED
                 )
             # term exist only add
@@ -81,19 +81,19 @@ class AddWordTerms(APIView):
                         user=request.user, terms=word)
                     user_book.save()
                     return Response(
-                        {'success': "word add to user book"},
+                        {'success': 'word add to user book'},
                         status=status.HTTP_202_ACCEPTED
                     )
 
                 else:
                     return Response(
-                        {'error': "error 505 already exist in your userbook"},
+                        {'error': 'error 505 already exist in your userbook'},
                         status=status.HTTP_406_NOT_ACCEPTABLE
                     )
         except:
-            print("error 401 error de peticion try")
+            print('error 401 error de peticion try')
             return Response(
-                {'error': "error 505 neither added or created"},
+                {'error': 'error 505 neither added or created'},
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
@@ -137,19 +137,17 @@ class StudyWordSession(APIView):
                 queryset.next_review_date = review.review_date
 
         queryset.last_review = today
-
         queryset.save()
-        # print(queryset, "easiness:",queryset.easiness, "interval:",queryset.interval,"repetitions:", queryset.repetitions, "next_review_date:",queryset.next_review_date, "last_review:",queryset.last_review, "===", today )
 
         try:
             return Response(
-                {"success": "study session update"},
+                {'success': 'study session update'},
                 status=status.HTTP_202_ACCEPTED
             )
         except:
-            print("error 401 error de peticion try")
+            print('error 401 error de peticion try')
             return Response(
-                {'error': "error 505 neither added or created"},
+                {'error': 'error 505 neither added or created'},
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
@@ -170,13 +168,13 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/text_to_spees
 
         self.mytext = request.data
         return Response(
-            {"success": "text to speesh"},
+            {'success': 'text to speesh'},
             status=status.HTTP_202_ACCEPTED
         )
 
     def get(self, request, format=None):
-        respose_audio = open(self.path, "rb")
+        respose_audio = open(self.path, 'rb')
         response = FileResponse(respose_audio)
-        # response['Content-Disposition'] = 'attachment; filename="somefilename.mp3"'
+        # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3''
 
         return response

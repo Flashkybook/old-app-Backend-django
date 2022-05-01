@@ -31,33 +31,33 @@ class RegisterView(APIView):
                         user.save()
                         if User.objects.filter(email=email).exists():
                             return Response(
-                                {'success': "User created", },
+                                {'success': 'User created', },
                                 status=status.HTTP_201_CREATED
                             )
                         else:
                             return Response(
-                                {'error': "verify user is fail", },
+                                {'error': 'verify user is fail', },
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
                             )
                     else:
                         return Response(
-                            {'error': "User Name already exists"},
+                            {'error': 'User Name already exists'},
                             status=status.HTTP_400_BAD_REQUEST
                         )
                 else:
                     return Response(
-                        {'error': "password  must be at least 8 characters in length", },
+                        {'error': 'password  must be at least 8 characters in length', },
                         status=status.HTTP_400_BAD_REQUEST
                     )
             else:
                 return Response(
-                    {'error': "password do not match", },
+                    {'error': 'password do not match', },
                     status=status.HTTP_400_BAD_REQUEST
                 )
         except:
             return Response(
-                {'error': "error 505 algo no funciona correctamente 001",
-                    "DATA": request.data},
+                {'error': 'error 505 algo no funciona correctamente 001',
+                    'DATA': request.data},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -75,11 +75,11 @@ class LoadUserView(APIView):
                 )
             except:
                 return Response(
-                    {'error': "error 505 algo no funciona correctamente", },
+                    {'error': 'error 505 algo no funciona correctamente', },
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
         else:
             return Response(
-                {'error': "No allow POST method ",  },
+                {'error': 'No allow POST method ', },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

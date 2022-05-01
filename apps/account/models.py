@@ -55,7 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # The name of the field that will be returned when get_email_field_name() is called on a User instance.
     EMAIL_FIELD = 'email'
-    
+
     # Required fields besides the password and USERNAME_FIELD when signing up.
     REQUIRED_FIELDS = []
 
