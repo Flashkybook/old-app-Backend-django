@@ -10,6 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 '''
 
+import dj_database_url  # HEROKU DEPLOY
+import django_heroku  # HEROKU DEPLOY
 import environ
 from datetime import timedelta
 from pathlib import Path
@@ -32,20 +34,20 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
+DEBUG = True #env('DEBUG')
 
-if DEBUG:
-    ALLOWED_HOSTS = ['*']
-else:
-    ALLOWED_HOSTS = [env('ALLOWED_HOSTS')]
+# if DEBUG:
+#     ALLOWED_HOSTS = ['*']
+# else:
+#     ALLOWED_HOSTS = ['*']#env('ALLOWED_HOSTS')]
 
+ALLOWED_HOSTS = [env('ALLOWED_HOSTS')]
 
 # Application definition
 sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -69,7 +71,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # 'corsheaders'
-    'whitenoise.middleware.WhiteNoiseMiddleware', # 'whitenoise'
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # 'whitenoise'
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -109,21 +111,12 @@ WSGI_APPLICATION = 'settings.wsgi.application'
 # }
 
 
-# import dj_database_url
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': env('POSTGRES_NAME'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': env('POSTGRES_HOST'),
-        'PORT': '5432',
-    }
-}
-
-# db_from_env = dj_database_url.config(conn_max_age=600)
-# DATABASES['default'].update(db_from_env)
+DATABASES = {}
+# Usa la variable de entorno DATABASE_URL="esta"
+django_heroku.settings(locals())
+options = DATABASES['default'].get('OPTIONS', {})
+options.pop('sslmode', None)
+DATABASES['default'] = dj_database_url.config(conn_max_age=600)
 
 
 # Password validation
@@ -164,9 +157,8 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'build', 'staticfiles')
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'build/static'),)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-MEDIA_ROOT = os.path.join(BASE_DIR,'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
-
 
 
 REST_FRAMEWORK = {
@@ -195,14 +187,10 @@ SIMPLE_JWT = {
 # url frontend request
 
 # CORS_ORIGIN_ALLOW_ALL=True
-if DEBUG:
-    CORS_ALLOWED_ORIGINS = [
-        'http://localhost:3000',
-    ]
-else:
-    CORS_ALLOWED_ORIGINS = [
-        env('CORS_ALLOWED_ORIGINS'),
-    ]
+
+CORS_ALLOWED_ORIGINS = [
+    env('CORS_ALLOWED_ORIGINS'),
+]
 
 
 # Default primary key field type
