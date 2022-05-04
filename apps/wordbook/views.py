@@ -61,42 +61,16 @@ class SetWord(APIView): # add Term http://127.0.0.1:8000/api/words/setword/
         # queryset = Dictionary.objects.filter(user=request.user.id)
         try:
             data = request.data
-            word_exist = WordTerm.objects.filter(word=data).exists()
             is_phrase = False
             if len(data.split()) > 1:
                 is_phrase = True
-            # created and added
-            if not word_exist:  # si no existe crea el termino y lo agrega a userbook
-                word = WordTerm.objects.create(word=data, phrase=is_phrase)
-                word.save()
-                # Lo agrega al user book
-                user_book = UserBook.objects.create(
-                    user=request.user, terms=word)
-                user_book.save()
-                return Response(
-                    {'success': 'word add to dictionary and add to user book'},
-                    status=status.HTTP_201_CREATED
+            word = WordTerm.objects.get_or_create(word=data, phrase=is_phrase)
+            user_book = UserBook.objects.create(user=request.user, terms=word[0])
+            user_book.save()
+            return Response(
+                {'success': 'word add to dictionary and add to user book'},
+                status=status.HTTP_201_CREATED
                 )
-            # term exist only add
-            else:
-                word = WordTerm.objects.get(word=data)
-                user_book_exist = UserBook.objects.filter(
-                    user=request.user, terms=word)
-                if not user_book_exist:
-                    # Lo agrega al user book
-                    user_book = UserBook.objects.create(
-                        user=request.user, terms=word)
-                    user_book.save()
-                    return Response(
-                        {'success': 'word add to user book'},
-                        status=status.HTTP_202_ACCEPTED
-                    )
-
-                else:
-                    return Response(
-                        {'error': 'error 505 already exist in your userbook'},
-                        status=status.HTTP_406_NOT_ACCEPTABLE
-                    )
         except:
             print('error 401 error de peticion try')
             return Response(
@@ -156,7 +130,6 @@ class StudySession(APIView): # http://127.0.0.1:8000/api/words/study_session/
 
 
 class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/text_to_speesh/
-
     permission_classes = [permissions.AllowAny]
     # name = slugify(self.mytext)
     # path = os.path.join((Path(__file__).resolve().parent), f'tem/{name}.ogg')
