@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import ViewUserBook, AddWordTerms, StudyWordSession, TextToSpeeshApi
+from .views import UserBookView, SetWord, UserBook, TextToSpeeshApi, StudySession
 
 urlpatterns = [
-    path('', ViewUserBook.as_view()), # http://127.0.0.1:8000/api/words/
-    path('add_to_dict/', AddWordTerms.as_view()), # http://127.0.0.1:8000/api/words/add_to_dict/  
-    path('study_session/', StudyWordSession.as_view()), # http://127.0.0.1:8000/api/words/study_session/
-    path('text_to_speesh/', TextToSpeeshApi.as_view()), # http://127.0.0.1:8000/api/words/text_to_speesh/
+    path('', UserBookView.as_view()), # http://127.0.0.1:8000/api/words/
+    path('setword/', SetWord.as_view()), # http://127.0.0.1:8000/api/words/setword/  
+    path('study_session/', StudySession.as_view()), # http://127.0.0.1:8000/api/words/study_session/
+    path('gttsApi/', TextToSpeeshApi.as_view()), # http://127.0.0.1:8000/api/words/gttsApi/
 ]

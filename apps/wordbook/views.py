@@ -14,8 +14,7 @@ from .models import UserBook, WordTerm
 # Create your views here.
 
 
-class ViewUserBook(APIView):
-    # solo pueden acceeder usuarion que manden token JWT
+class UserBookView(APIView): # http://127.0.0.1:8000/api/words/
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, format=None):
@@ -41,16 +40,24 @@ class ViewUserBook(APIView):
                 {'error': 'No allow POST method ', },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-# View Dictionary GET
-# add Term http://127.0.0.1:8000/api/words/add_to_dict/
 
+#get translate, audio, and 
+# GET TRANSLATE
+# 1.- pasar una palabra como argumento
+# 
+# - [ ] traducciónes
+# - [ ] scraping de google translate
+# - [ ] get word
+# - [ ] tranlate word
+# - [ ] sinonyms > trans to trans
+# - [ ] phrases
 
-class AddWordTerms(APIView):
+class SetWord(APIView): # add Term http://127.0.0.1:8000/api/words/setword/
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, format=None):
-        '''POST, crea un nuevo objeto WordTerm y lo agrega al userbook del current user
-        si este ya existe entonces lo encontramos y lo agregamos al current user book '''
+        """POST, crea un nuevo objeto WordTerm y lo agrega al userbook del current user
+        si este ya existe entonces lo encontramos y lo agregamos al current user book"""
         # queryset = Dictionary.objects.filter(user=request.user.id)
         try:
             data = request.data
@@ -96,20 +103,16 @@ class AddWordTerms(APIView):
                 {'error': 'error 505 neither added or created'},
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
-
+    
 # https://github.com/alankan886/SuperMemo2
-
-
-class StudyWordSession(APIView):
+class StudySession(APIView): # http://127.0.0.1:8000/api/words/study_session/
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, format=None):
         data = request.data
         queryset = UserBook.objects.get(id=data['id'])
-
         # user = request.user
         # serializer = UserBookSerializer(queryset, many=True)
-
         today = datetime.date.today()  # only day
 
         # PRIMERA VES QUE SE ESTUDIA LA PALABRA
@@ -167,6 +170,7 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/text_to_spees
         audio.save(self.path)
 
         self.mytext = request.data
+
         return Response(
             {'success': 'text to speesh'},
             status=status.HTTP_202_ACCEPTED
@@ -178,3 +182,4 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/text_to_spees
         # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3''
 
         return response
+
