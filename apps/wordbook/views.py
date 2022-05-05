@@ -65,18 +65,30 @@ class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
             is_phrase = False
             if len(data.split()) > 1:
                 is_phrase = True
-            word = WordTerm.objects.get_or_create(word=data, phrase=is_phrase)
-            user_book = UserBook.objects.create(
-                user=request.user, terms=word[0])
-            user_book.save()
-            return Response(
-                {'success': 'word add to dictionary and add to user book'},
-                status=status.HTTP_201_CREATED
-            )
+            
+            try:
+                word = WordTerm.objects.get_or_create(word=data, phrase=is_phrase)
+
+                try:
+                    user_book = UserBook.objects.create(user=request.user, terms=word[0])
+                    user_book.save()
+                    return Response(
+                        {'success': 'word add to dictionary and add to user book'},
+                        status=status.HTTP_201_CREATED
+                    )
+                except:
+                    return Response(
+                        {'error': f'error 402 no puede crear un userbook con estos datos= user:{request.user} terms: {word[0]}'},
+                        status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+            except:
+                return Response(
+                    {'error': f'error 401 no puede crear o encontrar termino con estos datos= data:{data} phrase:{is_phrase}'},
+                    status=status.HTTP_406_NOT_ACCEPTABLE
+                )
         except:
-            print('error 401 error de peticion try')
             return Response(
-                {'error': 'error 505 neither added or created'},
+                {'error': f'error 400 neither added or created data:{request.data}'},
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
@@ -140,7 +152,6 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
 
     def get(self, request, word=None): # get word by url
         # mytext = request.data
-        print(word)
         queryset = WordTerm.objects.filter(word=word)
         name = slugify(queryset[0])
 
