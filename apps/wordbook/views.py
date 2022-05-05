@@ -65,25 +65,41 @@ class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
             is_phrase = False
             if len(data.split()) > 1:
                 is_phrase = True
-            
-            try:
-                word = WordTerm.objects.get_or_create(word=data, phrase=is_phrase)
 
-                try:
-                    user_book = UserBook.objects.create(user=request.user, terms=word[0])
+            try:
+                word_exist = WordTerm.objects.filter(word=data).exists()
+                # volver al crear o get
+                if not word_exist:  # si no existe crea el termino y lo agrega a userbook
+                    word = WordTerm.objects.create(word=data, phrase=is_phrase)
+                    word.save()
+                    # Lo agrega al user book
+                    user_book = UserBook.objects.create(user=request.user, terms=word)
                     user_book.save()
                     return Response(
-                        {'success': 'word add to dictionary and add to user book'},
+                        {'success': "word add to dictionary and add to user book"},
                         status=status.HTTP_201_CREATED
                     )
-                except:
-                    return Response(
-                        {'error': f'error 402 no puede crear un userbook con estos datos= user:{request.user} terms: {word[0]}'},
-                        status=status.HTTP_406_NOT_ACCEPTABLE
-                    )
+                else:
+                    word = WordTerm.objects.get(word=data)
+                    user_book_exist = UserBook.objects.filter(user=request.user, terms=word)
+                    if not user_book_exist:
+                        # Lo agrega al user book
+                        user_book = UserBook.objects.create(user=request.user, terms=word)
+                        user_book.save()
+                        return Response(
+                            {'success': "word add to user book"},
+                            status=status.HTTP_202_ACCEPTED
+                        )
+                    else:
+                        return Response(
+                            {'error': "error 505 already exist in your userbook"},
+                            status=status.HTTP_406_NOT_ACCEPTABLE
+                        )
             except:
                 return Response(
-                    {'error': f'error 401 no puede crear o encontrar termino con estos datos= data:{data} phrase:{is_phrase}'},
+                    {
+                        'error': 'error 401 no puede crear o encontrar termino con estos datos => data:{data}, phrase:{is_phrase},  resultado: {word}'
+                    },
                     status=status.HTTP_406_NOT_ACCEPTABLE
                 )
         except:
@@ -150,26 +166,26 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
     queryset = WordTerm.objects.all()
     serializer = WordTermSerializer(queryset, many=True)
 
-    def get(self, request, word=None): # get word by url
+    def get(self, request, word=None):  # get word by url
         # mytext = request.data
         queryset = WordTerm.objects.filter(word=word)
         name = slugify(queryset[0])
 
         language = 'en'
 
-        path = os.path.join((Path(__file__).resolve().parent.parent.parent), f'tem/{word}.ogg')
+        path = os.path.join(
+            (Path(__file__).resolve().parent.parent.parent), f'tem/{word}.ogg')
         path_exist = os.path.exists(path)
 
-        if not path_exist: # create new audio
+        if not path_exist:  # create new audio
             audio = gTTS(text=name, lang=language)
-            audio.save(path) 
+            audio.save(path)
 
-        respose_audio = open(path, 'rb') # open
+        respose_audio = open(path, 'rb')  # open
         response = FileResponse(respose_audio)
         # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3'' # donwload
 
         return response
-
 
     # def post(self, request, word=None):
     #     mytext = request.data
