@@ -1,14 +1,18 @@
 from django.db import models
-# from django.contrib.auth.models import User
 from account.models import User
-# Create your models here.
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-# PHRASE:
-# tienen palabras, no tienen sinonimos, si esta en userbook, word es null, y si no esta es null
+class languages(models.TextChoices):  
+    ES = "Español"
+    EN = "English"
 
 class WordTerm(models.Model):
     word = models.CharField(max_length=50, unique=True, primary_key=True)
+    language = models.CharField(max_length=50, choices=languages.choices, blank=True)
+
+    # translate = models.ManyToManyField('self', blank=True)
+    # sinonyms = models.ManyToManyField('self', blank=True)
+
     phrase = models.BooleanField(default=False)
     
 
@@ -20,7 +24,7 @@ class UserBook(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_book')
     terms = models.ForeignKey(
         WordTerm, on_delete=models.CASCADE, related_name='users')
-    # sinonyms = models.ManyToManyField('self')
+    
 
     # last calidad
     easiness = models.DecimalField(default=0, decimal_places=2, max_digits=4)

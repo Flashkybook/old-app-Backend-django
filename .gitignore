@@ -23,6 +23,8 @@ media
 # Distribution / packaging
 .Python
 build/
+tem/
+
 develop-eggs/
 dist/
 downloads/

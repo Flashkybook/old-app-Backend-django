@@ -14,7 +14,7 @@ from .models import UserBook, WordTerm
 # Create your views here.
 
 
-class UserBookView(APIView): # http://127.0.0.1:8000/api/words/
+class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, format=None):
@@ -41,10 +41,10 @@ class UserBookView(APIView): # http://127.0.0.1:8000/api/words/
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-#get translate, audio, and 
+# get translate, audio, and
 # GET TRANSLATE
 # 1.- pasar una palabra como argumento
-# 
+#
 # - [ ] traducciónes
 # - [ ] scraping de google translate
 # - [ ] get word
@@ -52,7 +52,8 @@ class UserBookView(APIView): # http://127.0.0.1:8000/api/words/
 # - [ ] sinonyms > trans to trans
 # - [ ] phrases
 
-class SetWord(APIView): # add Term http://127.0.0.1:8000/api/words/setword/
+
+class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, format=None):
@@ -65,21 +66,24 @@ class SetWord(APIView): # add Term http://127.0.0.1:8000/api/words/setword/
             if len(data.split()) > 1:
                 is_phrase = True
             word = WordTerm.objects.get_or_create(word=data, phrase=is_phrase)
-            user_book = UserBook.objects.create(user=request.user, terms=word[0])
+            user_book = UserBook.objects.create(
+                user=request.user, terms=word[0])
             user_book.save()
             return Response(
                 {'success': 'word add to dictionary and add to user book'},
                 status=status.HTTP_201_CREATED
-                )
+            )
         except:
             print('error 401 error de peticion try')
             return Response(
                 {'error': 'error 505 neither added or created'},
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
-    
+
 # https://github.com/alankan886/SuperMemo2
-class StudySession(APIView): # http://127.0.0.1:8000/api/words/study_session/
+
+
+class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, format=None):
@@ -129,30 +133,50 @@ class StudySession(APIView): # http://127.0.0.1:8000/api/words/study_session/
             )
 
 
-class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/text_to_speesh/
+class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>/
     permission_classes = [permissions.AllowAny]
-    # name = slugify(self.mytext)
-    # path = os.path.join((Path(__file__).resolve().parent), f'tem/{name}.ogg')
-    path = os.path.join((Path(__file__).resolve().parent.parent.parent), f'static/tem/gtts.ogg')
+    queryset = WordTerm.objects.all()
+    serializer = WordTermSerializer(queryset, many=True)
 
-    def post(self, request, format=None):
-        mytext = request.data
+    def get(self, request, word=None): # get word by url
+        # mytext = request.data
+        print(word)
+        queryset = WordTerm.objects.filter(word=word)
+        name = slugify(queryset[0])
+
         language = 'en'
 
-        audio = gTTS(text=mytext, lang=language)
-        audio.save(self.path)
+        path = os.path.join((Path(__file__).resolve().parent.parent.parent), f'tem/{word}.ogg')
+        path_exist = os.path.exists(path)
 
-        self.mytext = request.data
+        if not path_exist: # create new audio
+            audio = gTTS(text=name, lang=language)
+            audio.save(path) 
 
-        return Response(
-            {'success': 'text to speesh'},
-            status=status.HTTP_202_ACCEPTED
-        )
-
-    def get(self, request, format=None):
-        respose_audio = open(self.path, 'rb')
+        respose_audio = open(path, 'rb') # open
         response = FileResponse(respose_audio)
-        # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3''
+        # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3'' # donwload
 
         return response
 
+
+    # def post(self, request, word=None):
+    #     mytext = request.data
+    #     language = 'en'
+
+    #     audio = gTTS(text=mytext, lang=language)
+    #     audio.save(self.path)
+
+    #     self.mytext = request.data
+
+    #     return Response(
+    #         {'success': 'text to speesh'},
+    #         status=status.HTTP_202_ACCEPTED
+    #     )
+
+    # def get(self, request, format=None):
+    #     respose_audio = open(self.path, 'rb')
+    #     response = FileResponse(respose_audio)
+    #     # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3''
+
+    #     return response
