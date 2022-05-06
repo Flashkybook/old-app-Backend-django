@@ -61,30 +61,20 @@ class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
         si este ya existe entonces lo encontramos y lo agregamos al current user book"""
 
         try:
-            print("1")
             data = request.data
-            print("2")
             is_phrase = False
             if len(data.split()) > 1:
                 is_phrase = True
-            print("3")
             word_exist = WordTerm.objects.filter(word=data).exists()
-            print("4", word_exist)
             if not word_exist:  # si no existe crea el termino y lo agrega a userbook
-                print("5", data, is_phrase, )
                 try:
-                    print("WHYYYYYYYYYYYYYYYYYYYYYYYY ! 5", data, is_phrase, )
                     word = WordTerm.objects.create(word=data, phrase=is_phrase)
-                    print("6.1")
                     word.save()
                     try:
                         # Lo agrega al user book
-                        print("7.1", request.user, word)
                         user_book = UserBook.objects.create(
                             user=request.user, terms=word)
-                        print("8.1")
                         user_book.save()
-                        print("9.1")
                         return Response(
                             {'success': "word created and add to user book"},
                             status=status.HTTP_202_ACCEPTED
@@ -105,19 +95,14 @@ class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
                     )
             else:
                 word = WordTerm.objects.get(word=data)
-                print("6.2")
                 try:
                     user_book_exist = UserBook.objects.filter(
                         user=request.user, terms=word)
-                    print("7.2")
-
                     if not user_book_exist:
                         # Lo agrega al user book
                         try:
                             user_book = UserBook.objects.create(
                                 user=request.user, terms=word)
-                            print("7.3")
-
                             user_book.save()
                             return Response(
                                 {'success': "word add to user book"},
@@ -214,40 +199,28 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
         # mytext = request.data
         queryset = WordTerm.objects.filter(word=word)
         name = slugify(queryset[0])
-
         language = 'en'
 
-        path = os.path.join(
-            (Path(__file__).resolve().parent.parent.parent), f'tem/{word}.ogg')
-        path_exist = os.path.exists(path)
+        # local tmp root        
+        local = os.path.join((Path(__file__).resolve().parent.parent.parent), f'tmp/')
+        if os.path.join(local):
+            path = os.path.join(
+                (Path(__file__).resolve().parent.parent.parent), f'tmp/{word}.ogg')
 
-        if not path_exist:  # create new audio
+        # dev tmp root
+        else:
+            path = os.path.join(f'/tmp/{word}.ogg')
+        
+        # create new audio only if not exist
+        path_exist = os.path.exists(path)
+        if not path_exist:  
             audio = gTTS(text=name, lang=language)
             audio.save(path)
 
         respose_audio = open(path, 'rb')  # open
         response = FileResponse(respose_audio)
-        # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3'' # donwload
 
+        # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3'' # donwload
         return response
 
-    # def post(self, request, word=None):
-    #     mytext = request.data
-    #     language = 'en'
-
-    #     audio = gTTS(text=mytext, lang=language)
-    #     audio.save(self.path)
-
-    #     self.mytext = request.data
-
-    #     return Response(
-    #         {'success': 'text to speesh'},
-    #         status=status.HTTP_202_ACCEPTED
-    #     )
-
-    # def get(self, request, format=None):
-    #     respose_audio = open(self.path, 'rb')
-    #     response = FileResponse(respose_audio)
-    #     # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3''
-
-    #     return response
+ 
