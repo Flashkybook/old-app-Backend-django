@@ -15,7 +15,7 @@ from .models import UserBook, WordTerm
 
 
 class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
-    permission_classes = [permissions.AllowAny]
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request, format=None):
         # user book de current user
@@ -54,65 +54,109 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
 
 
 class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
-    permission_classes = [permissions.AllowAny]
+    permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
-        """POST, crea un nuevo objeto WordTerm y lo agrega al userbook del current user
+        """crea un nuevo objeto WordTerm y lo agrega al userbook del current user
         si este ya existe entonces lo encontramos y lo agregamos al current user book"""
-        # queryset = Dictionary.objects.filter(user=request.user.id)
+
         try:
+            print("1")
             data = request.data
+            print("2")
             is_phrase = False
             if len(data.split()) > 1:
                 is_phrase = True
-
-            try:
-                word_exist = WordTerm.objects.filter(word=data).exists()
-                # volver al crear o get
-                if not word_exist:  # si no existe crea el termino y lo agrega a userbook
+            print("3")
+            word_exist = WordTerm.objects.filter(word=data).exists()
+            print("4", word_exist)
+            if not word_exist:  # si no existe crea el termino y lo agrega a userbook
+                print("5", data, is_phrase, )
+                try:
+                    print("WHYYYYYYYYYYYYYYYYYYYYYYYY ! 5", data, is_phrase, )
                     word = WordTerm.objects.create(word=data, phrase=is_phrase)
+                    print("6.1")
                     word.save()
-                    # Lo agrega al user book
-                    user_book = UserBook.objects.create(user=request.user, terms=word)
-                    user_book.save()
-                    return Response(
-                        {'success': "word add to dictionary and add to user book"},
-                        status=status.HTTP_201_CREATED
-                    )
-                else:
-                    word = WordTerm.objects.get(word=data)
-                    user_book_exist = UserBook.objects.filter(user=request.user, terms=word)
-                    if not user_book_exist:
+                    try:
                         # Lo agrega al user book
-                        user_book = UserBook.objects.create(user=request.user, terms=word)
+                        print("7.1", request.user, word)
+                        user_book = UserBook.objects.create(
+                            user=request.user, terms=word)
+                        print("8.1")
                         user_book.save()
+                        print("9.1")
                         return Response(
-                            {'success': "word add to user book"},
+                            {'success': "word created and add to user book"},
                             status=status.HTTP_202_ACCEPTED
                         )
-                    else:
+                    except:
                         return Response(
-                            {'error': "error 505 already exist in your userbook"},
+                            {
+                                'error': f'error 403 cannot create user_book with => user:{request.user} terms:{word}'
+                            },
                             status=status.HTTP_406_NOT_ACCEPTABLE
                         )
-            except:
-                return Response(
-                    {
-                        'error': 'error 401 no puede crear o encontrar termino con estos datos => data:{data}, phrase:{is_phrase},  resultado: {word}'
-                    },
-                    status=status.HTTP_406_NOT_ACCEPTABLE
-                )
+                except:
+                    return Response(
+                        {
+                            'error': f'error 404 cannot create word with => data:{data}, phrase:{is_phrase}'
+                        },
+                        status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+            else:
+                word = WordTerm.objects.get(word=data)
+                print("6.2")
+                try:
+                    user_book_exist = UserBook.objects.filter(
+                        user=request.user, terms=word)
+                    print("7.2")
+
+                    if not user_book_exist:
+                        # Lo agrega al user book
+                        try:
+                            user_book = UserBook.objects.create(
+                                user=request.user, terms=word)
+                            print("7.3")
+
+                            user_book.save()
+                            return Response(
+                                {'success': "word add to user book"},
+                                status=status.HTTP_202_ACCEPTED
+                            )
+
+                        except:
+                            return Response(
+                                {
+                                    'error': f'error 403 cannot create user_book with => user:{request.user}, word:{word}'
+                                },
+                                status=status.HTTP_406_NOT_ACCEPTABLE
+                            )
+                except:
+                    return Response(
+                        {
+                            'error': f'error 403 cannot get word with => word:{data}'
+                        },
+                        status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+                else:
+                    return Response(
+                        {'error': "402 already exist in your userbook"},
+                        status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
         except:
             return Response(
-                {'error': f'error 400 neither added or created data:{request.data}'},
+                {
+                    'error': f'error 401 => {data}'
+                },
                 status=status.HTTP_406_NOT_ACCEPTABLE
             )
+
 
 # https://github.com/alankan886/SuperMemo2
 
 
 class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
-    permission_classes = [permissions.AllowAny]
+    permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
         data = request.data
@@ -162,7 +206,7 @@ class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
 
 
 class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>/
-    permission_classes = [permissions.AllowAny]
+    permission_classes = (permissions.AllowAny,)
     queryset = WordTerm.objects.all()
     serializer = WordTermSerializer(queryset, many=True)
 

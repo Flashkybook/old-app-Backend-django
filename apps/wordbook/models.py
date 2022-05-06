@@ -8,7 +8,7 @@ class languages(models.TextChoices):
 
 class WordTerm(models.Model):
     word = models.CharField(max_length=50, unique=True, primary_key=True)
-    language = models.CharField(max_length=50, choices=languages.choices, blank=True)
+    language = models.CharField(max_length=50, choices=languages.choices, blank=True, null=True)
 
     # translate = models.ManyToManyField('self', blank=True)
     # sinonyms = models.ManyToManyField('self', blank=True)
