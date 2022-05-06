@@ -195,22 +195,29 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
     queryset = WordTerm.objects.all()
     serializer = WordTermSerializer(queryset, many=True)
 
+    if not os.path.exists('/tmp'):
+        os.mkdir('/tmp')
+        print('create /tmp', os.path.exists('/tmp'))
+
     def get(self, request, word=None):  # get word by url
-        # mytext = request.data
         queryset = WordTerm.objects.filter(word=word)
         name = slugify(queryset[0])
         language = 'en'
 
+
         # local tmp root        
         local = os.path.join((Path(__file__).resolve().parent.parent.parent), f'tmp/')
-        if os.path.join(local):
+        if os.path.exists(local):
             path = os.path.join(
                 (Path(__file__).resolve().parent.parent.parent), f'tmp/{word}.ogg')
-
+            print("Local", path )
+    
         # dev tmp root
         else:
             path = os.path.join(f'/tmp/{word}.ogg')
+            print("Dev", path )
         
+
         # create new audio only if not exist
         path_exist = os.path.exists(path)
         if not path_exist:  
