@@ -62,6 +62,8 @@ class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
 
         try:
             data = request.data
+            data = data.strip()
+            print(data)
             is_phrase = False
             if len(data.split()) > 1:
                 is_phrase = True
@@ -138,8 +140,6 @@ class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
 
 
 # https://github.com/alankan886/SuperMemo2
-
-
 class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
     permission_classes = (permissions.AllowAny,)
 
