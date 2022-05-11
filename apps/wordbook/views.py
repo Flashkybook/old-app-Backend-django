@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.template.defaultfilters import slugify
 from gtts import gTTS
 import os
@@ -146,14 +147,17 @@ class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
     def post(self, request, format=None):
         data = request.data
         queryset = UserBook.objects.get(id=data['id'])
-        # user = request.user
-        # serializer = UserBookSerializer(queryset, many=True)
+
         today = datetime.date.today()  # only day
 
+        # if data['fails'] > 5:
+        #     data['fails'] = 5
+
+        print(data)
         # PRIMERA VES QUE SE ESTUDIA LA PALABRA
         if queryset.last_review == None:
             # review date would default to date.today() if not provided
-            review = SMTwo.first_review(data['easiness'])
+            review = SMTwo.first_review(5 - data['fails'])
             # review prints SMTwo(easiness=2.36, interval=1, repetitions=1, review_date=datetime.date(2021, 3, 15))
             queryset.easiness = review.easiness
             queryset.interval = review.interval
@@ -163,12 +167,13 @@ class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
         else:
             # ESTUDIAS LA PALABRA VARIAS VECES UN MISMO DIA
             if(queryset.last_review == today):
+                print( queryset.repetitions + 1)
                 queryset.repetitions = queryset.repetitions + 1
             # ESTUDIO FRECUENCIA NORMAL
             else:
                 # other review
-                review = SMTwo(queryset.easiness, queryset.interval,
-                               queryset.repetitions).review(data['easiness'])
+                review = SMTwo(float(queryset.easiness), queryset.interval,
+                               queryset.repetitions).review(5 - data['fails'])
                 queryset.easiness = review.easiness
                 queryset.interval = review.interval
                 queryset.repetitions = review.repetitions
@@ -204,23 +209,18 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
         name = slugify(queryset[0])
         language = 'en'
 
-
         # local tmp root        
         local = os.path.join((Path(__file__).resolve().parent.parent.parent), f'tmp/')
         if os.path.exists(local):
             path = os.path.join(
                 (Path(__file__).resolve().parent.parent.parent), f'tmp/{word}.ogg')
-            print("Local", path )
     
         # dev tmp root
         else:
             path = os.path.join(f'/tmp/{word}.ogg')
-            print("Dev", path )
         
-
-        # create new audio only if not exist
-        path_exist = os.path.exists(path)
-        if not path_exist:  
+        # check file exist or file size is 0KB for create new audio
+        if not  os.path.exists(path) or os.path.getsize(path) == 0:  
             audio = gTTS(text=name, lang=language)
             audio.save(path)
 

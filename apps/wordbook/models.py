@@ -1,6 +1,5 @@
 from django.db import models
 from account.models import User
-from django.core.validators import MaxValueValidator, MinValueValidator
 
 class languages(models.TextChoices):  
     ES = "Español"
@@ -14,10 +13,17 @@ class WordTerm(models.Model):
     # sinonyms = models.ManyToManyField('self', blank=True)
 
     phrase = models.BooleanField(default=False)
+
     
 
     def __str__(self):
         return self.word
+    
+    def corrections(self):
+        self.word.strip()
+        print(self.word)
+        return self.word
+
 
 
 class UserBook(models.Model):

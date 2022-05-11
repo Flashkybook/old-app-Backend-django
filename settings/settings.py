@@ -112,11 +112,14 @@ WSGI_APPLICATION = 'settings.wsgi.application'
 
 
 DATABASES = {}
-# Usa la variable de entorno DATABASE_URL="esta"
+
+
 django_heroku.settings(locals())
 options = DATABASES['default'].get('OPTIONS', {})
 options.pop('sslmode', None)
 DATABASES['default'] = dj_database_url.config(conn_max_age=600)
+
+
 
 
 # Password validation
