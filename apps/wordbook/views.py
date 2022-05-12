@@ -45,7 +45,6 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-
     def post(self, request, format=None):
         """crea un nuevo objeto WordTerm y lo agrega al userbook del current user
         si este ya existe entonces lo encontramos y lo agregamos al current user book"""
@@ -133,7 +132,7 @@ class SetUserBook(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
     permission_classes = (permissions.AllowAny,)
 
     def delete(self, request, pk, format=None):
-        
+
         user_book = get_object_or_404(UserBook, user=request.user, id=pk)
         # only can delete this word if this word is only used by this user
         if(user_book.terms.users.count() == 1):
@@ -141,7 +140,6 @@ class SetUserBook(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
             word.delete()
         else:
             user_book.delete()
-
 
         return Response(
             {'success': f'{user_book} delete success'},
@@ -259,3 +257,34 @@ class GetTranslateApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
             {'success': "word term"},
             status=status.HTTP_202_ACCEPTED
         )
+
+
+class UpdateDb(APIView):  # http://127.0.0.1:8000/api/words/
+    permission_classes = (permissions.AllowAny,)
+
+    def get(self, request, format=None):
+        # user book de current user
+        queryset = WordTerm.objects.all()
+        # Envia el json correspondiente al queriset ed userbook actual
+        try:
+            print("updating db data")
+            for i in queryset:
+                word_update = i.word.strip()
+                i.word = word_update
+                i.save()
+                print(i, "update")
+        except:
+            print("cannot update db")
+
+        serializer = WordTermSerializer(queryset, many=True)
+
+        try:
+            return Response(
+                {'success': serializer.data},
+                status=status.HTTP_200_OK
+            )
+        except:
+            return Response(
+                {'error': 'error 505 something no work', },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
