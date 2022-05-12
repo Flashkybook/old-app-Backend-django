@@ -34,7 +34,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True #env('DEBUG')
+DEBUG = True  # env('DEBUG')
 
 # if DEBUG:
 #     ALLOWED_HOSTS = ['*']
@@ -55,7 +55,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'whitenoise.runserver_nostatic',
+    # 'whitenoise.runserver_nostatic',
+
     # Api
     'rest_framework',
     'corsheaders',
@@ -71,7 +72,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # 'corsheaders'
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # 'whitenoise'
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',  # 'whitenoise'
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -118,8 +119,6 @@ django_heroku.settings(locals())
 options = DATABASES['default'].get('OPTIONS', {})
 options.pop('sslmode', None)
 DATABASES['default'] = dj_database_url.config(conn_max_age=600)
-
-
 
 
 # Password validation
