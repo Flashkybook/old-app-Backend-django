@@ -1,18 +1,21 @@
-from decimal import Decimal
-from django.template.defaultfilters import slugify
-from gtts import gTTS
 import os
-from django.http import FileResponse, HttpResponse
-from pathlib import Path
 import datetime
+from pathlib import Path
+from gtts import gTTS
 from supermemo2 import SMTwo
+
+from django.template.defaultfilters import slugify
+from django.http import FileResponse, HttpResponse
+from django.shortcuts import get_object_or_404
+
+# Django Rest Framework
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions, status
+
+# models and serializer
 from .serializers import UserBookSerializer, WordTermSerializer
 from .models import UserBook, WordTerm
-
-# Create your views here.
 
 
 class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
@@ -42,20 +45,6 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-# get translate, audio, and
-# GET TRANSLATE
-# 1.- pasar una palabra como argumento
-#
-# - [ ] traducciónes
-# - [ ] scraping de google translate
-# - [ ] get word
-# - [ ] tranlate word
-# - [ ] sinonyms > trans to trans
-# - [ ] phrases
-
-
-class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
-    permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
         """crea un nuevo objeto WordTerm y lo agrega al userbook del current user
@@ -140,8 +129,29 @@ class SetWord(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
             )
 
 
-# https://github.com/alankan886/SuperMemo2
+class SetUserBook(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
+    permission_classes = (permissions.AllowAny,)
+
+    def delete(self, request, pk, format=None):
+        
+        user_book = get_object_or_404(UserBook, user=request.user, id=pk)
+        # only can delete this word if this word is only used by this user
+        if(user_book.terms.users.count() == 1):
+            word = WordTerm.objects.get(word=user_book.terms.word)
+            word.delete()
+        else:
+            user_book.delete()
+
+
+        return Response(
+            {'success': f'{user_book} delete success'},
+            status=status.HTTP_202_ACCEPTED
+        )
+
+
 class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
+    # https://github.com/alankan886/SuperMemo2
+
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request, format=None):
@@ -152,24 +162,27 @@ class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
 
         # if data['fails'] > 5:
         #     data['fails'] = 5
-
         print(data)
+
         # PRIMERA VES QUE SE ESTUDIA LA PALABRA
         if queryset.last_review == None:
             # review date would default to date.today() if not provided
             review = SMTwo.first_review(5 - data['fails'])
             # review prints SMTwo(easiness=2.36, interval=1, repetitions=1, review_date=datetime.date(2021, 3, 15))
+
+            # save data of SMTwo in queryset
             queryset.easiness = review.easiness
             queryset.interval = review.interval
             queryset.repetitions = review.repetitions
             queryset.next_review_date = review.review_date
 
         else:
-            # ESTUDIAS LA PALABRA VARIAS VECES UN MISMO DIA
+            # WORD STUDY MANY TIMES AT SAME DAY
             if(queryset.last_review == today):
-                print( queryset.repetitions + 1)
+                print(queryset.repetitions + 1)
                 queryset.repetitions = queryset.repetitions + 1
-            # ESTUDIO FRECUENCIA NORMAL
+
+            # NORMAL STUDY FREQUENCY
             else:
                 # other review
                 review = SMTwo(float(queryset.easiness), queryset.interval,
@@ -204,30 +217,45 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
         os.mkdir('/tmp')
         print('create /tmp', os.path.exists('/tmp'))
 
-    def get(self, request, word=None):  # get word by url
+    def get(self, request, word):  # get word by url
         queryset = WordTerm.objects.filter(word=word)
         name = slugify(queryset[0])
         language = 'en'
 
-        # local tmp root        
-        local = os.path.join((Path(__file__).resolve().parent.parent.parent), f'tmp/')
+        # local tmp root
+        local = os.path.join(
+            (Path(__file__).resolve().parent.parent.parent), f'tmp/')
         if os.path.exists(local):
             path = os.path.join(
                 (Path(__file__).resolve().parent.parent.parent), f'tmp/{word}.ogg')
-    
+
         # dev tmp root
         else:
             path = os.path.join(f'/tmp/{word}.ogg')
-        
+
         # check file exist or file size is 0KB for create new audio
-        if not  os.path.exists(path) or os.path.getsize(path) == 0:  
+        if not os.path.exists(path) or os.path.getsize(path) == 0:
             audio = gTTS(text=name, lang=language)
             audio.save(path)
 
         respose_audio = open(path, 'rb')  # open
         response = FileResponse(respose_audio)
 
-        # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3'' # donwload
+        # response['Content-Disposition'] = 'attachment; filename='somefilename.mp3' # for donwload file
         return response
 
- 
+
+class GetTranslateApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>/
+    permission_classes = (permissions.AllowAny,)
+    queryset = WordTerm.objects.all()
+    serializer = WordTermSerializer(queryset, many=True)
+
+    def get(self, request, word=None):  # get word by url
+        queryset = WordTerm.objects.filter(word=word)
+        term = slugify(queryset[0])
+        language = 'en'
+
+        return Response(
+            {'success': "word term"},
+            status=status.HTTP_202_ACCEPTED
+        )
