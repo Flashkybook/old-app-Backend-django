@@ -22,29 +22,20 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
     permission_classes = (permissions.AllowAny,)
 
     def get(self, request, format=None):
-        # user book de current user
+
         queryset = UserBook.objects.filter(user=request.user.id)
-        # Envia el json correspondiente al queriset ed userbook actual
+
         serializer = UserBookSerializer(queryset, many=True)
-
-        if request.method == "GET":
-            try:
-                return Response({"success": serializer.data}, status=status.HTTP_200_OK)
-            except:
-                return Response(
-                    {
-                        "error": "error 505 algo no funciona correctamente",
-                    },
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
-        else:
-
+        try:
+            return Response({"success": serializer.data}, status=status.HTTP_200_OK)
+        except:
             return Response(
                 {
-                    "error": "No allow POST method ",
+                    "error": "error 505 internal server error",
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+      
 
     def post(self, request, format=None):
         """crea un nuevo objeto WordTerm y lo agrega al userbook del current user
@@ -53,7 +44,6 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
         try:
             data = request.data
             data = data.strip()
-            print(data)
             is_phrase = False
             if len(data.split()) > 1:
                 is_phrase = True
