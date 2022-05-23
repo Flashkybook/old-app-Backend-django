@@ -1,7 +1,6 @@
 from django.db import models
 from account.models import User
 
-
 class languages(models.TextChoices):
     ES = "Español"
     EN = "English"
@@ -19,12 +18,16 @@ class WordTerm(models.Model):
         return self.word
 
     def corrections(self):
-        self.word.strip()
-        print(self.word)
+        correct = self.word.strip()
+        correct.replace(',','')
+        correct.replace('.','')
+        
+        self.word = correct
         return self.word
 
 
-class UserBook(models.Model):
+
+class FlashCard(models.Model):
     user = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name='user_book')
     terms = models.ForeignKey(

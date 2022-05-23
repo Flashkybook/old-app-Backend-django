@@ -14,18 +14,18 @@ from rest_framework.response import Response
 from rest_framework import permissions, status
 
 # models and serializer
-from .serializers import UserBookSerializer, WordTermSerializer
-from .models import UserBook, WordTerm
+from .serializers import FlashCardSerializer, WordTermSerializer
+from .models import FlashCard, WordTerm
 
 
-class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
+class FlashCardView(APIView):  # http://127.0.0.1:8000/api/words/
     permission_classes = (permissions.AllowAny,)
 
     def get(self, request, format=None):
 
-        queryset = UserBook.objects.filter(user=request.user.id)
+        queryset = FlashCard.objects.filter(user=request.user.id)
+        serializer = FlashCardSerializer(queryset, many=True)
 
-        serializer = UserBookSerializer(queryset, many=True)
         try:
             return Response({"success": serializer.data}, status=status.HTTP_200_OK)
         except:
@@ -38,8 +38,39 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
       
 
     def post(self, request, format=None):
-        """crea un nuevo objeto WordTerm y lo agrega al userbook del current user
+        """crea un nuevo objeto WordTerm y lo agrega al FlashCard del current user
         si este ya existe entonces lo encontramos y lo agregamos al current user book"""
+        try:
+            data = request.data
+            data = data.strip()
+            is_phrase = False
+            if len(data.split()) > 1:
+                is_phrase = True
+            
+            try:
+                word = WordTerm.objects.get_or_create(word=data, phrase=is_phrase)
+
+                try:
+                    user_book = FlashCard.objects.create(user=request.user, terms=word[0])
+                    user_book.save()
+                    return Response(
+                        {"success": "word created and add to user book"},
+                        status=status.HTTP_201_CREATED,
+                    )                
+                except:
+                    return Response(
+                        {"error": f"can't create user_book {data}"}, status=status.HTTP_406_NOT_ACCEPTABLE
+                    )
+            except:
+                return Response(
+                    {"error": f"can't create word {data}"}, status=status.HTTP_406_NOT_ACCEPTABLE
+                )
+
+        except:
+            return Response(
+                {"error": f"error 401 => {request.data}"}, status=status.HTTP_406_NOT_ACCEPTABLE
+            )
+
 
         try:
             data = request.data
@@ -48,13 +79,13 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
             if len(data.split()) > 1:
                 is_phrase = True
             word_exist = WordTerm.objects.filter(word=data).exists()
-            if not word_exist:  # si no existe crea el termino y lo agrega a userbook
+            if not word_exist:  # si no existe crea el termino y lo agrega a FlashCard
                 try:
                     word = WordTerm.objects.create(word=data, phrase=is_phrase)
                     word.save()
                     try:
                         # Lo agrega al user book
-                        user_book = UserBook.objects.create(
+                        user_book = FlashCard.objects.create(
                             user=request.user, terms=word
                         )
                         user_book.save()
@@ -79,13 +110,13 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
             else:
                 word = WordTerm.objects.get(word=data)
                 try:
-                    user_book_exist = UserBook.objects.filter(
+                    user_book_exist = FlashCard.objects.filter(
                         user=request.user, terms=word
                     )
                     if not user_book_exist:
                         # Lo agrega al user book
                         try:
-                            user_book = UserBook.objects.create(
+                            user_book = FlashCard.objects.create(
                                 user=request.user, terms=word
                             )
                             user_book.save()
@@ -108,7 +139,7 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
                     )
                 else:
                     return Response(
-                        {"error": "402 already exist in your userbook"},
+                        {"error": "402 already exist in your FlashCard"},
                         status=status.HTTP_406_NOT_ACCEPTABLE,
                     )
         except:
@@ -117,12 +148,12 @@ class UserBookView(APIView):  # http://127.0.0.1:8000/api/words/
             )
 
 
-class SetUserBook(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
+class SetFlashCard(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
     permission_classes = (permissions.AllowAny,)
 
     def delete(self, request, pk, format=None):
 
-        user_book = get_object_or_404(UserBook, user=request.user, id=pk)
+        user_book = get_object_or_404(FlashCard, user=request.user, id=pk)
         # only can delete this word if this word is only used by this user
         if user_book.terms.users.count() == 1:
             word = WordTerm.objects.get(word=user_book.terms.word)
@@ -142,7 +173,7 @@ class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
 
     def post(self, request, format=None):
         data = request.data
-        queryset = UserBook.objects.get(id=data["id"])
+        queryset = FlashCard.objects.get(id=data["id"])
 
         today = datetime.date.today()  # only day
 
@@ -207,7 +238,6 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
         queryset = WordTerm.objects.filter(word=word)
         name = slugify(queryset[0])
         language = "en"
-        print(word)
 
         # local tmp root
         local = os.path.join(
@@ -250,7 +280,7 @@ class UpdateDb(APIView):  # http://127.0.0.1:8000/api/words/
     def get(self, request, format=None):
         # user book de current user
         queryset = WordTerm.objects.all()
-        # Envia el json correspondiente al queriset ed userbook actual
+        # Envia el json correspondiente al queriset ed FlashCard actual
         try:
             print("updating db data")
             for i in queryset:

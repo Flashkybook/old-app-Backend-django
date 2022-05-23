@@ -22,31 +22,38 @@ class RegisterView(APIView):
 
             if password == re_password:
                 if len(password) >= 8:
-                    if not User.objects.filter(email=email):
-                        user = User.objects.create_user(
-                            email=email,
-                            username=username,
-                            password=password,
-                        )
-                        user.save()
-                        if User.objects.filter(email=email).exists():
-                            return Response(
-                                {'success': 'User created', },
-                                status=status.HTTP_201_CREATED
+                    if not User.objects.filter(email=email):                        
+                        if not User.objects.filter(username=username):
+                            user = User.objects.create_user(
+                                email=email,
+                                username=username,
+                                password=password,
                             )
+                            user.save()
+                            if User.objects.filter(email=email).exists():
+                                return Response(
+                                    {'success': 'User created', },
+                                    status=status.HTTP_201_CREATED
+                                )
+                            else:
+                                return Response(
+                                    {'error': 'verify user is fail', },
+                                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                                )
                         else:
                             return Response(
-                                {'error': 'verify user is fail', },
-                                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                                {'error': 'User Name Already Exists'},
+                                status=status.HTTP_400_BAD_REQUEST
                             )
+                        
                     else:
                         return Response(
-                            {'error': 'User Name already exists'},
+                            {'error': 'Email Account Already Exists'},
                             status=status.HTTP_400_BAD_REQUEST
                         )
                 else:
                     return Response(
-                        {'error': 'password  must be at least 8 characters in length', },
+                        {'error': 'password must be at least 8 characters in length', },
                         status=status.HTTP_400_BAD_REQUEST
                     )
             else:
@@ -56,8 +63,8 @@ class RegisterView(APIView):
                 )
         except:
             return Response(
-                {'error': 'error 505 algo no funciona correctamente 001',
-                    'DATA': request.data},
+                {'error': 'error 505 algo no funciona correctamente',
+                    'data': request.data},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
@@ -66,7 +73,6 @@ class LoadUserView(APIView):
     queryset = User.objects.none()
 
     def get(self, request, format=None):
-        if(request.method == 'GET'):
             try:
                 user = UserSerializer(request.user)
                 return Response(
@@ -78,8 +84,4 @@ class LoadUserView(APIView):
                     {'error': 'error 505 algo no funciona correctamente', },
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
-        else:
-            return Response(
-                {'error': 'No allow POST method ', },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+  

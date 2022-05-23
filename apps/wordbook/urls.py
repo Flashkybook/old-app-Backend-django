@@ -1,13 +1,13 @@
 from django.urls import path
-from .views import (UserBookView, SetUserBook, UpdateDb,
+from .views import (FlashCardView, SetFlashCard, UpdateDb,
                     TextToSpeeshApi, StudySession, GetTranslateApi,)
 
 urlpatterns = [
     # http://127.0.0.1:8000/api/words/
-    path("", UserBookView.as_view()),
+    path("", FlashCardView.as_view()),
 
     # http://127.0.0.1:8000/api/words/1/
-    path("id/<pk>/", SetUserBook.as_view()),
+    path("id/<pk>/", SetFlashCard.as_view()),
 
     # http://127.0.0.1:8000/api/words/updatedb/
     # path('updatedb/', UpdateDb.as_view()),

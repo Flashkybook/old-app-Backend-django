@@ -1,6 +1,6 @@
 from django.contrib import admin
-from .models import UserBook, WordTerm
+from .models import FlashCard, WordTerm
 # Register your models here.
 
-admin.site.register(UserBook)
+admin.site.register(FlashCard)
 admin.site.register(WordTerm)
