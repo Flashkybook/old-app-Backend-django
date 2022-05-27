@@ -1,3 +1,4 @@
+from typing import Tuple
 from django.db import models
 from account.models import User
 
@@ -7,7 +8,8 @@ class languages(models.TextChoices):
 
 
 class WordTerm(models.Model):
-    word = models.CharField(max_length=200, unique=True, primary_key=True)
+    # new_id = models.IntegerField(auto_created=True, unique=True, primary_key=True)
+    word = models.CharField(max_length=200, unique=True)
     language = models.CharField(
         max_length=50, choices=languages.choices, blank=True, null=True)
     # translate = models.ManyToManyField('self', blank=True)
@@ -17,13 +19,13 @@ class WordTerm(models.Model):
     def __str__(self):
         return self.word
 
-    def corrections(self):
+    def save(self, *args, **kwargs):
         correct = self.word.strip()
         correct.replace(',','')
         correct.replace('.','')
         
         self.word = correct
-        return self.word
+        super(WordTerm, self).save(*args, **kwargs)
 
 
 

@@ -238,7 +238,7 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
         queryset = WordTerm.objects.filter(word=word)
         name = slugify(queryset[0])
         language = "en"
-
+        
         # local tmp root
         local = os.path.join(
             (Path(__file__).resolve().parent.parent.parent), f"tmp/")
