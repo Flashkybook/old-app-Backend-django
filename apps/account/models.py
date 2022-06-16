@@ -5,7 +5,6 @@ from django.utils import timezone
 
 
 class UserManager(BaseUserManager):
-
     """The UserManager subclasses the BaseUserManager and overrides the methods create_user and create_superuser. 
     These custom methods are needed because the default methods expect a username to be provided. 
     The admin app and manage.py will call these methods."""

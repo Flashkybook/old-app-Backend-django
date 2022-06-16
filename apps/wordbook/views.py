@@ -71,83 +71,6 @@ class FlashCardView(APIView):  # http://127.0.0.1:8000/api/words/
                 {"error": f"error 401 => {request.data}"}, status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
-
-        try:
-            data = request.data
-            data = data.strip()
-            is_phrase = False
-            if len(data.split()) > 1:
-                is_phrase = True
-            word_exist = WordTerm.objects.filter(word=data).exists()
-            if not word_exist:  # si no existe crea el termino y lo agrega a FlashCard
-                try:
-                    word = WordTerm.objects.create(word=data, phrase=is_phrase)
-                    word.save()
-                    try:
-                        # Lo agrega al user book
-                        user_book = FlashCard.objects.create(
-                            user=request.user, terms=word
-                        )
-                        user_book.save()
-                        return Response(
-                            {"success": "word created and add to user book"},
-                            status=status.HTTP_202_ACCEPTED,
-                        )
-                    except:
-                        return Response(
-                            {
-                                "error": f"error 403 cannot create user_book with => user:{request.user} terms:{word}"
-                            },
-                            status=status.HTTP_406_NOT_ACCEPTABLE,
-                        )
-                except:
-                    return Response(
-                        {
-                            "error": f"error 404 cannot create word with => data:{data}, phrase:{is_phrase}"
-                        },
-                        status=status.HTTP_406_NOT_ACCEPTABLE,
-                    )
-            else:
-                word = WordTerm.objects.get(word=data)
-                try:
-                    user_book_exist = FlashCard.objects.filter(
-                        user=request.user, terms=word
-                    )
-                    if not user_book_exist:
-                        # Lo agrega al user book
-                        try:
-                            user_book = FlashCard.objects.create(
-                                user=request.user, terms=word
-                            )
-                            user_book.save()
-                            return Response(
-                                {"success": "word add to user book"},
-                                status=status.HTTP_202_ACCEPTED,
-                            )
-
-                        except:
-                            return Response(
-                                {
-                                    "error": f"error 403 cannot create user_book with => user:{request.user}, word:{word}"
-                                },
-                                status=status.HTTP_406_NOT_ACCEPTABLE,
-                            )
-                except:
-                    return Response(
-                        {"error": f"error 403 cannot get word with => word:{data}"},
-                        status=status.HTTP_406_NOT_ACCEPTABLE,
-                    )
-                else:
-                    return Response(
-                        {"error": "402 already exist in your FlashCard"},
-                        status=status.HTTP_406_NOT_ACCEPTABLE,
-                    )
-        except:
-            return Response(
-                {"error": f"error 401 => {data}"}, status=status.HTTP_406_NOT_ACCEPTABLE
-            )
-
-
 class SetFlashCard(APIView):  # add Term http://127.0.0.1:8000/api/words/setword/
     permission_classes = (permissions.AllowAny,)
 
@@ -227,8 +150,6 @@ class StudySession(APIView):  # http://127.0.0.1:8000/api/words/study_session/
 
 class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>/
     permission_classes = (permissions.AllowAny,)
-    queryset = WordTerm.objects.all()
-    serializer = WordTermSerializer(queryset, many=True)
 
     if not os.path.exists("/tmp"):
         os.mkdir("/tmp")
@@ -238,7 +159,6 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
         queryset = WordTerm.objects.filter(word=word)
         name = slugify(queryset[0])
         language = "en"
-        
         # local tmp root
         local = os.path.join(
             (Path(__file__).resolve().parent.parent.parent), f"tmp/")
@@ -247,7 +167,6 @@ class TextToSpeeshApi(APIView):  # http://127.0.0.1:8000/api/words/gttsApi/<arg>
                 (Path(__file__).resolve(
                 ).parent.parent.parent), f"tmp/{word}.ogg"
             )
-
         # dev tmp root
         else:
             path = os.path.join(f"/tmp/{word}.ogg")

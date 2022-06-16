@@ -63,7 +63,7 @@ class RegisterView(APIView):
                 )
         except:
             return Response(
-                {'error': 'error 505 algo no funciona correctamente',
+                {'error': 'server error',
                     'data': request.data},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -81,7 +81,7 @@ class LoadUserView(APIView):
                 )
             except:
                 return Response(
-                    {'error': 'error 505 algo no funciona correctamente', },
+                    {'error': 'server error', },
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR
                 )
   
